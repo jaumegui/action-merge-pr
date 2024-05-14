@@ -1,4 +1,5 @@
 require 'httparty'
+require 'json'
 
 module Notion
   class Note
@@ -15,7 +16,7 @@ module Notion
     def title
       @json_page['properties']['Description']['title'].first['plain_text']
     end
-    
+
     def priority
       @json_page['properties']['Priority']['select']['name']
     end
@@ -32,11 +33,11 @@ module Notion
   class Client
     include HTTParty
     base_uri 'https://api.notion.com/v1/'
-    
+
     def get_page(page_id)
       request(:get, "/pages/#{page_id}")
     end
-    
+
     def query_database(query)
       request(:post, "/databases/#{database_id}/query", query)
     end
@@ -48,9 +49,9 @@ module Notion
     def retrieve_database(body = nil)
       request(:get, "/databases/#{database_id}", body)
     end
-    
+
     private
-    
+
     def request(method_name, path, body = nil)
       options = { headers: headers, format: :plain }
       options.merge!(body: body.to_json) if body
@@ -59,11 +60,11 @@ module Notion
 
       JSON.parse response
     end
-    
+
     def database_id
       ENV['NOTION_DATABASE_ID']
     end
-    
+
     def headers
       {
         'Authorization' => "Bearer #{ENV['NOTION_SECRET']}",
@@ -75,7 +76,7 @@ module Notion
 
   class Wrapper
     attr_reader :client
-    
+
     def initialize
       @client = Notion::Client.new
     end
@@ -117,8 +118,8 @@ module Notion
     def set_in_progress(note_id)
       properties = {
         "Statut Tech" => {
-          "select" => { 
-            "name" => "2 - In progress" 
+          "select" => {
+            "name" => "2 - In progress"
           }
         }
       }
@@ -129,8 +130,8 @@ module Notion
     def set_shipped(note_id)
       properties = {
         "Statut Tech" => {
-          "select" => { 
-            "name" => "5 - Shipped" 
+          "select" => {
+            "name" => "5 - Shipped"
           }
         }
       }
