@@ -105,6 +105,20 @@ module Notion
       Notion::Note.new(json_page)
     end
 
+    def get_page_by_pr_url
+      body = {
+        filter: {
+          property: 'Pr Github',
+          url: {
+            equals: ENV['PR_URL']
+          }
+        }
+      }
+
+      json_page = client.query_database(body)['results'].first
+      Notion::Note.new(json_page)
+    end
+
     def set_pr_ull(note_id)
       properties = {
         "Pr Github" => {
@@ -146,8 +160,6 @@ class MergePullRequest
 
   def perform(branch_name)
     self.branch_id = branch_name.split('-').last
-    note = wrapper.get_page_by_branch_id(branch_id)
-
     if note
       wrapper.set_shipped(note.id)
     end
@@ -157,6 +169,8 @@ class MergePullRequest
 
   def note
     @note ||= wrapper.get_page_by_branch_id(branch_id)
+  rescue StandardError
+    wrapper.get_page_by_pr_url
   end
 
   def wrapper
